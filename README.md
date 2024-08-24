@@ -12,3 +12,6 @@
 7.Update the pipeline
 8.Update the main.py
 9.Update the dvc.yaml
+
+# Create Repo to store docker image
+418295706603.dkr.ecr.eu-north-1.amazonaws.com/chest-cancer-classification/chest-cancer-classification
