@@ -23,9 +23,11 @@ list_of_files = [
     "setup.py",
     "research/trials.ipynb",
     "templates/index.html"
+    "webapp.py"
 ]
 
 for file in list_of_files:
+    print("\n --- ---  --- ")
     filepath = Path(file)
     filedir, filename = os.path.split(filepath)
 

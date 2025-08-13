@@ -1,10 +1,7 @@
 import os
-import urllib.request as request
-from zipfile import ZipFile
 import tensorflow as tf
-import time
-from cnnClassifier.entity.config_entity import (DataIngestionConfig, PrepareBaseModelConfig, TrainingConfig)
 from pathlib import Path
+import json
 
 class Training:
     def __init__(self, config):
@@ -23,7 +20,7 @@ class Training:
         # Compile the model with a fresh optimizer
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate= self.config.params_learning_rate),
-            loss='categorical_crossentropy',
+            loss='binary_crossentropy',
             metrics=['accuracy']
         )
 
@@ -36,13 +33,15 @@ class Training:
         dataflow_kwargs = dict(
             target_size=self.config.params_image_size[:-1],
             batch_size=self.config.params_batch_size,
-            interpolation="bilinear"
+            interpolation="bilinear",
+            class_mode="binary" 
         )
 
         valid_datagenerator = tf.keras.preprocessing.image.ImageDataGenerator(
             **datagenerator_kwargs
         )
 
+        print("Valid Dir ", self.config.training_data)
         self.valid_generator = valid_datagenerator.flow_from_directory(
             directory=self.config.training_data,
             subset="validation",
@@ -63,12 +62,15 @@ class Training:
         else:
             train_datagenerator = valid_datagenerator
 
+        print("Train Dir ", self.config.training_data)
         self.train_generator = train_datagenerator.flow_from_directory(
             directory=self.config.training_data,
             subset="training",
             shuffle=True,
             **dataflow_kwargs
         )
+
+        print(self.train_generator.class_indices)
 
     @staticmethod
     def save_model(path: Path, model: tf.keras.Model):
@@ -84,7 +86,8 @@ class Training:
         # Train the model
         self.model.fit(
             self.train_generator,
-            epochs=self.config.params_epochs,
+            epochs=1,  
+            # self.config.params_epochs,
             steps_per_epoch=self.steps_per_epoch,
             validation_steps=self.validation_steps,
             validation_data=self.valid_generator
@@ -95,3 +98,10 @@ class Training:
             path=self.config.trained_model_path,
             model=self.model
         )
+
+    def save_classes(self):
+        save_dir = "model_with_classes"
+        os.makedirs(save_dir, exist_ok=True) 
+        with open("model_with_classes/class_indices.json", "w") as f:
+            json.dump(self.train_generator.class_indices, f)
+    

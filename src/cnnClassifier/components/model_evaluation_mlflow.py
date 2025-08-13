@@ -3,9 +3,9 @@ import mlflow
 import mlflow.keras
 from urllib.parse import urlparse
 import tensorflow as tf
-from cnnClassifier.entity.config_entity import EvaluationConfig
-from cnnClassifier.utils.common import save_json
-from cnnClassifier import logger
+from src.cnnClassifier.entity.config_entity import EvaluationConfig
+from src.cnnClassifier.utils.common import save_json
+from src.cnnClassifier import logger
 import os
 
 class Evaluation:

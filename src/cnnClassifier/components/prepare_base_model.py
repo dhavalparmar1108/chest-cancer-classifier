@@ -2,7 +2,7 @@ import os
 import urllib.request as request
 from zipfile import ZipFile
 import tensorflow as tf
-from cnnClassifier.entity.config_entity import PrepareBaseModelConfig
+from src.cnnClassifier.entity.config_entity import PrepareBaseModelConfig
 from pathlib import Path
 
 class PrepareBaseModel:
@@ -32,8 +32,8 @@ class PrepareBaseModel:
 
         flatten_in = tf.keras.layers.Flatten()(model.output)
         prediction = tf.keras.layers.Dense(
-            units=classes,
-            activation="softmax"
+            units=1,
+            activation = "sigmoid"
         )(flatten_in)
 
         full_model = tf.keras.models.Model(
@@ -62,7 +62,6 @@ class PrepareBaseModel:
 
         self.save_model(path=self.config.updated_base_model_path, model=self.full_model)
     
-
 
     @staticmethod
     def save_model(path: Path, model: tf.keras.Model):
