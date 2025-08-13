@@ -33,6 +33,7 @@ class Evaluation:
             directory=self.config.training_data,
             subset="validation",
             shuffle=False,
+            class_mode="binary",
             **dataflow_kwargs
         )
 
@@ -44,6 +45,7 @@ class Evaluation:
 
     def evaluation(self):
         self.model = self.load_model(self.config.path_of_model)
+        print(self.model.summary())
         self._valid_generator()
         self.score = self.model.evaluate(self.valid_generator)
         self.save_score()

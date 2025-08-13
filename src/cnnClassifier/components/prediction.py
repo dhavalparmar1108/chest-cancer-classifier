@@ -29,24 +29,30 @@ class Prediction:
         img_array = np.expand_dims(img_array, axis=0)
 
         # Load later
-        model = tf.keras.models.load_model("artifacts/training/model.keras")
-        with open("model_with_classes/class_indices.json") as f:
-            class_indices = json.load(f)
+        model = tf.keras.models.load_model(self.config.trained_model_path)
 
-        # Predict
-        pred = model.predict(img_array)
+        try:
+            with open("model_with_classes/class_indices.json") as f:
+                class_indices = json.load(f)
 
-        # For binary classification
-        if pred.shape[1] == 1:  # sigmoid output
-            predicted_class = (pred > 0.5).astype("int32")[0][0]
-        else:  # softmax output
-            predicted_class = np.argmax(pred, axis=1)[0]
+            # Predict
+            pred = model.predict(img_array)
 
-        # Map back to class name
-        class_labels = list(class_indices.keys())
-        print("Predicted class:", class_labels[predicted_class])
+            # For binary classification
+            if pred.shape[1] == 1:  # sigmoid output
+                predicted_class = (pred > 0.5).astype("int32")[0][0]
+            else:  # softmax output
+                predicted_class = np.argmax(pred, axis=1)[0]
 
-        return class_labels[predicted_class]
+            # Map back to class name
+            class_labels = list(class_indices.keys())
+            print("Predicted class:", class_labels[predicted_class])
+
+            return class_labels[predicted_class]
+
+        except FileNotFoundError:
+            return "Class labels file not found !" 
+
 
 
 
