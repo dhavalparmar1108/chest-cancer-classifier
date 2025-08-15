@@ -86,8 +86,7 @@ class Training:
         # Train the model
         self.model.fit(
             self.train_generator,
-            epochs=1,  
-            # self.config.params_epochs,
+            epochs=self.config.params_epochs,
             steps_per_epoch=self.steps_per_epoch,
             validation_steps=self.validation_steps,
             validation_data=self.valid_generator

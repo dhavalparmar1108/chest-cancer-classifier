@@ -6,7 +6,9 @@ import tensorflow as tf
 from src.cnnClassifier.entity.config_entity import EvaluationConfig
 from src.cnnClassifier.utils.common import save_json
 from src.cnnClassifier import logger
-import os
+from dotenv import load_dotenv
+import numpy as np
+from mlflow.models import infer_signature
 
 class Evaluation:
     def __init__(self, config: EvaluationConfig):
@@ -45,7 +47,6 @@ class Evaluation:
 
     def evaluation(self):
         self.model = self.load_model(self.config.path_of_model)
-        print(self.model.summary())
         self._valid_generator()
         self.score = self.model.evaluate(self.valid_generator)
         self.save_score()
@@ -56,14 +57,22 @@ class Evaluation:
 
     
     def log_into_mlflow(self):
-        logger.info("In log_into" + self.config.mlflow_uri)
+        load_dotenv()
+        
+        input = np.random.rand(1, 224, 224, 3).astype(np.float32)
+        output = self.model.predict(input)
+
+        logger.info("In log_into " + self.config.mlflow_uri) 
         logger.info("trackin set " + str(mlflow.is_tracking_uri_set()))
         mlflow.set_tracking_uri(self.config.mlflow_tracking_uri)
         mlflow.set_registry_uri(self.config.mlflow_uri)
         logger.info("now trackin set " + str(mlflow.is_tracking_uri_set()))
         logger.info("registry uri " + mlflow.get_registry_uri())
         tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-        logger.info("tracking" + tracking_url_type_store)
+        logger.info("tracking " + tracking_url_type_store)
+
+        signature = infer_signature(input, output)
+
         with mlflow.start_run():
             mlflow.log_params(self.config.all_params)
             mlflow.log_metrics(
@@ -76,14 +85,16 @@ class Evaluation:
                 # please refer to the doc for more information:
                 # https://mlflow.org/docs/latest/model-registry.html#api-workflow
                 logger.info("If Saving") 
-                mlflow.sklearn.log_model(
-                    sk_model=self.model,
-                    artifact_path="sklearn-model",
-                    registered_model_name="sk-learn-random-forest-reg-model",)
+                mlflow.keras.log_model(self.model, artifact_path = "model", signature = signature)
+                # mlflow.pyfunc.log_model(
+                #     self.model,
+                #     artifact_path="model",
+                #     registered_model_name="keras-reg-model",)
             else:
                 logger.info("Else Saving") 
-                mlflow.sklearn.log_model(
-                    sk_model=self.model,
-                    artifact_path="sklearn-model")
+                mlflow.keras.log_model(self.model, artifact_path = "model", signature = signature)
+                # mlflow.pyfunc.log_model(
+                #     self.model,
+                #     artifact_path="model")
             logger.info("Saved Succefully")    
                 

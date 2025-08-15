@@ -45,7 +45,5 @@ class EvaluationConfig:
 
 @dataclass(frozen=True)
 class PredictionConfig:
-    root_dir: Path
     trained_model_path: Path
-    updated_base_model_path: Path
     params_image_size: list
